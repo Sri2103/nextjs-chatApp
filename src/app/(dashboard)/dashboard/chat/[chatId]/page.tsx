@@ -1,7 +1,8 @@
 import { fetchRedis } from '@/helpers/redis'
+import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { messageArrayValidator } from '@/lib/validations/messages'
-import { getSession } from 'next-auth/react'
+import { getServerSession } from 'next-auth'
 import { notFound } from 'next/navigation'
 import React, { FC } from 'react'
 interface pageprops{
@@ -27,7 +28,7 @@ const getChatMessages = async(chatId: string) =>{
 
 const page = async ({params}:pageprops) => {
     const {chatId} = params
-    const session = await getSession()
+    const session = await getServerSession(authOptions)
     if(!session) notFound()
     const {user} = session
     const [userId1, userId2] = chatId.split("--")
