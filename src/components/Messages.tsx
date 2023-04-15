@@ -1,26 +1,47 @@
 "use client"
-import { cn } from '@/lib/utils'
+import { pusherClient } from '@/lib/pusher'
+import { cn, toPusherKey } from '@/lib/utils'
 import { Message } from '@/lib/validations/messages'
 import { format } from 'date-fns'
 import Image from 'next/image'
-import React, { FC, useRef, useState } from 'react'
+import React, { FC, useEffect, useRef, useState } from 'react'
 interface Messageprops {
     initialMessages: Message[]
     sessionId:string
     sessionImage:string | null | undefined
     chatPartner: User
+    chatId: string
 }
 const Messages:FC<Messageprops> = ({
     initialMessages,
     sessionId,
     sessionImage,
-    chatPartner
+    chatPartner,
+    chatId
 }) => {
     const [messages, setMessages] = useState<Message[]>(initialMessages)
     const scrollDownRef = useRef<HTMLDivElement | null>(null)
     const formatTimeStamp = (timestamp:number) => {
         return format(timestamp,"HH:mm")
     }
+
+    useEffect(() => {
+        pusherClient.subscribe(toPusherKey(
+            `chat:${chatId}`
+           ))
+           const incomingMessageHandler = (message:Message) =>{
+            setMessages((prev)=> [message, ...prev])
+           }
+           pusherClient.bind('incoming-message',incomingMessageHandler)
+       
+         return () => {
+            pusherClient.unsubscribe(toPusherKey(
+                `chat:${chatId}`
+               ))
+               pusherClient.unbind('incoming-message',incomingMessageHandler)
+         }
+       }, [])
+
   return (
     <div id='messages' className='flex h-full flex-1 flex-col-reverse gap-4 p-3 
         overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrollbar-touch'>
