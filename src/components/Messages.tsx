@@ -40,7 +40,7 @@ const Messages:FC<Messageprops> = ({
                ))
                pusherClient.unbind('incoming-message',incomingMessageHandler)
          }
-       }, [])
+       }, [chatId])
 
   return (
     <div id='messages' className='flex h-full flex-1 flex-col-reverse gap-4 p-3 
